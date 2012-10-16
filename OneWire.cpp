@@ -125,6 +125,7 @@ uint8_t OneWire::reset(void)
 
 	noInterrupts();
 	DIRECT_MODE_INPUT(reg, mask);
+	DIRECT_WRITE_HIGH(reg, mask);	// Enable pull-up
 	interrupts();
 	// wait until the wire is high... just in case
 	do {
@@ -139,6 +140,7 @@ uint8_t OneWire::reset(void)
 	delayMicroseconds(500);
 	noInterrupts();
 	DIRECT_MODE_INPUT(reg, mask);	// allow it to float
+	DIRECT_WRITE_HIGH(reg, mask);	// Enable pull-up
 	delayMicroseconds(80);
 	r = !DIRECT_READ(reg, mask);
 	interrupts();
@@ -189,6 +191,7 @@ uint8_t OneWire::read_bit(void)
 	DIRECT_WRITE_LOW(reg, mask);
 	delayMicroseconds(3);
 	DIRECT_MODE_INPUT(reg, mask);	// let pin float, pull up will raise
+	DIRECT_WRITE_HIGH(reg, mask);	// Enable pull-up
 	delayMicroseconds(10);
 	r = DIRECT_READ(reg, mask);
 	interrupts();
@@ -212,7 +215,7 @@ void OneWire::write(uint8_t v, uint8_t power /* = 0 */) {
     if ( !power) {
 	noInterrupts();
 	DIRECT_MODE_INPUT(baseReg, bitmask);
-	DIRECT_WRITE_LOW(baseReg, bitmask);
+	DIRECT_WRITE_HIGH(baseReg, bitmask);	// Enable pull-up
 	interrupts();
     }
 }
@@ -223,7 +226,7 @@ void OneWire::write_bytes(const uint8_t *buf, uint16_t count, bool power /* = 0 
   if (!power) {
     noInterrupts();
     DIRECT_MODE_INPUT(baseReg, bitmask);
-    DIRECT_WRITE_LOW(baseReg, bitmask);
+    DIRECT_WRITE_HIGH(baseReg, bitmask);	// Enable pull-up
     interrupts();
   }
 }
@@ -270,6 +273,7 @@ void OneWire::depower()
 {
 	noInterrupts();
 	DIRECT_MODE_INPUT(baseReg, bitmask);
+	DIRECT_WRITE_HIGH(baseReg, bitmask);	// Enable pull-up
 	interrupts();
 }
 
