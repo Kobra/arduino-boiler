@@ -1,3 +1,7 @@
+//Store values in EEPROM
+#include <EEPROM.h>
+byte hiTempAddr = 0;
+
 byte hiTemp = 65;
 byte tempStep = 5;
 float lastTemp;
@@ -97,6 +101,12 @@ void setup() {
   pinMode(BLPin, OUTPUT);
   backlight(12);
   sensors.setResolution(SensorAddr, 9);
+
+  hiTemp = EEPROM.read(hiTempAddr);
+  if(hiTemp < 20 || hiTemp > 100) {
+    hiTemp = 65;
+    EEPROM.write(hiTempAddr,hiTemp);
+  }
 
   if (!rtc.begin()) {
     Serial.println("Couldn't find RTC");
