@@ -23,7 +23,8 @@ byte len, s;
 #define ONE_WIRE_BUS 11
 OneWire oneWire(ONE_WIRE_BUS);
 DallasTemperature sensors(&oneWire);
-DeviceAddress SensorAddr = { 0x28, 0xFF, 0x55, 0x8E, 0x03, 0x15, 0x02, 0x88 };
+//DeviceAddress SensorAddr = { 0x28, 0xFF, 0x55, 0x8E, 0x03, 0x15, 0x02, 0x88 };
+DeviceAddress SensorAddr;
 
 //RTC
 #include <Wire.h>
@@ -33,6 +34,31 @@ uint32_t lastTimestamp;
 
 //Relay
 byte relayPin = 12;
+
+//Beep
+byte beepPin = 13;
+
+void beep(int duration = 100, byte level = 20) {
+  analogWrite(beepPin, level);
+  delay(duration);
+  analogWrite(beepPin, 0);
+}
+
+void playTone(int tone, int duration) {
+  for (long i = 0; i < duration * 1000L; i += tone * 2) {
+    digitalWrite(beepPin, HIGH);
+    delayMicroseconds(tone);
+    digitalWrite(beepPin, LOW);
+    delayMicroseconds(tone);
+  }
+}
+
+void alarm() {
+  playTone(1700,500);
+  playTone(956,500);
+  playTone(1700,500);
+  playTone(956,500);
+}
 
 void checkTemp(float temp) {
   byte checkTemp = hiTemp;
@@ -85,6 +111,8 @@ void printLines() {
   lcd.print(line1);
   lcd.setCursor(0,1);
   lcd.print(line2);
+  Serial.println(line1);
+  Serial.println(line2);
 }
 
 void relay(bool state) {
@@ -100,6 +128,8 @@ void setup() {
   lcd.begin(16, 2);
   pinMode(BLPin, OUTPUT);
   backlight(12);
+
+  if (!sensors.getAddress(SensorAddr, 0)) Serial.println("Unable to find address for Device 0"); 
   sensors.setResolution(SensorAddr, 9);
 
   hiTemp = EEPROM.read(hiTempAddr);
@@ -121,6 +151,8 @@ void setup() {
 
   pinMode(relayPin, OUTPUT);
   relay(false);
+  pinMode(beepPin, OUTPUT);
+  beep();
 }
 
 void loop() {
@@ -139,6 +171,7 @@ void loop() {
     checkTemp(temp);
     line1 += "Temp: ";
     line1 += int(temp);
+    if(temp >= 80) alarm();
   } else {
     relay(false);
     line1 += "Sensor error!";
